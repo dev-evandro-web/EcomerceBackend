@@ -1,0 +1,1015 @@
+
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#0f172a;
+    display:flex;
+    color:white;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+    width:260px;
+    background:#020617;
+    height:100vh;
+    position:fixed;
+    padding:30px 20px;
+    border-right:1px solid rgba(255,255,255,.1);
+}
+
+.logo{
+    font-size:28px;
+    font-weight:bold;
+    text-align:center;
+    color:#38bdf8;
+    margin-bottom:40px;
+}
+
+.menu{
+    list-style:none;
+}
+
+.menu li{
+    margin:15px 0;
+}
+
+.menu a{
+    color:white;
+    text-decoration:none;
+    display:block;
+    padding:14px;
+    border-radius:14px;
+    transition:.3s;
+}
+
+.menu a:hover{
+    background:#1e293b;
+    transform:translateX(5px);
+}
+
+/* MAIN */
+
+.main{
+    margin-left:260px;
+    width:100%;
+    padding:35px;
+}
+
+/* TOP */
+
+.top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.top-bar h1{
+    font-size:34px;
+}
+
+/* SEARCH */
+
+.search-box{
+    background:white;
+    padding:12px 20px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    width:350px;
+}
+
+.search-box input{
+    border:none;
+    outline:none;
+    width:100%;
+    font-size:15px;
+}
+
+/* BUTTON */
+
+.add-btn{
+    background:linear-gradient(90deg,#06b6d4,#2563eb);
+    border:none;
+    padding:14px 24px;
+    border-radius:14px;
+    color:white;
+    cursor:pointer;
+    font-weight:600;
+    transition:.3s;
+}
+
+.add-btn:hover{
+    transform:scale(1.05);
+}
+
+/* CART */
+
+.cart-box{
+    background:#1e293b;
+    padding:14px 20px;
+    border-radius:14px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:600;
+}
+
+#cart-count{
+    background:#38bdf8;
+    width:25px;
+    height:25px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+/* SLIDER */
+
+.slider{
+    position:relative;
+    width:100%;
+    height:350px;
+    overflow:hidden;
+    border-radius:25px;
+    margin-bottom:40px;
+}
+
+.slides{
+    display:flex;
+    width:100%;
+    height:100%;
+    transition:transform 1s ease-in-out;
+}
+
+.slide{
+    min-width:100%;
+    position:relative;
+}
+
+.slide img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.slide-text{
+    position:absolute;
+    bottom:40px;
+    left:40px;
+    background:rgba(0,0,0,.55);
+    padding:25px;
+    border-radius:20px;
+}
+
+.slide-text h2{
+    margin-bottom:10px;
+}
+
+/* NAV SLIDER */
+
+.prev,
+.next{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:55px;
+    height:55px;
+    border:none;
+    border-radius:50%;
+    background:rgba(0,0,0,.5);
+    color:white;
+    font-size:24px;
+    cursor:pointer;
+}
+
+.prev{
+    left:20px;
+}
+
+.next{
+    right:20px;
+}
+
+/* DOTS */
+
+.dots{
+    position:absolute;
+    bottom:20px;
+    width:100%;
+    text-align:center;
+}
+
+.dot{
+    width:12px;
+    height:12px;
+    background:white;
+    border-radius:50%;
+    display:inline-block;
+    margin:0 5px;
+    opacity:.5;
+    cursor:pointer;
+}
+
+.dot.active{
+    opacity:1;
+    background:#38bdf8;
+}
+
+/* PRODUCTS */
+
+.products{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:25px;
+}
+
+.card{
+    background:#1e293b;
+    border-radius:22px;
+    overflow:hidden;
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-10px);
+}
+
+.card img{
+    width:100%;
+    height:240px;
+    object-fit:cover;
+}
+
+.card-content{
+    padding:20px;
+}
+
+.price{
+    color:#38bdf8;
+    font-size:24px;
+    font-weight:bold;
+    margin:15px 0;
+}
+
+.stock{
+    color:#22c55e;
+    margin-bottom:15px;
+}
+
+/* FORM */
+
+.form-box{
+    margin-top:45px;
+    background:#1e293b;
+    padding:30px;
+    border-radius:25px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+}
+
+.input-group{
+    display:flex;
+    flex-direction:column;
+}
+
+.input-group label{
+    margin-bottom:8px;
+}
+
+.input-group input,
+.input-group select,
+.input-group textarea{
+    padding:14px;
+    border:none;
+    border-radius:14px;
+    outline:none;
+    background:#334155;
+    color:white;
+}
+
+textarea{
+    height:120px;
+}
+
+/* SAVE */
+
+.save-btn{
+    margin-top:25px;
+    background:linear-gradient(90deg,#06b6d4,#2563eb);
+    border:none;
+    padding:16px 28px;
+    border-radius:14px;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* MODAL CARRINHO */
+
+.cart-modal{
+    position:fixed;
+    top:0;
+    right:-100%;
+    width:400px;
+    height:100vh;
+    background:#020617;
+    transition:.5s;
+    z-index:9999;
+}
+
+.cart-modal.active{
+    right:0;
+}
+
+.cart-content{
+    padding:25px;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+}
+
+.cart-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.close-cart{
+    background:red;
+    color:white;
+    border:none;
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    cursor:pointer;
+}
+
+#cart-items{
+    flex:1;
+    overflow-y:auto;
+}
+
+.cart-item{
+    background:#1e293b;
+    padding:12px;
+    border-radius:15px;
+    display:flex;
+    gap:15px;
+    margin-bottom:15px;
+}
+
+.cart-item img{
+    width:80px;
+    height:80px;
+    border-radius:12px;
+    object-fit:cover;
+}
+
+.remove-btn{
+    margin-top:10px;
+    background:#ef4444;
+    color:white;
+    border:none;
+    padding:8px 12px;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.checkout-btn{
+    width:100%;
+    margin-top:15px;
+    background:linear-gradient(90deg,#06b6d4,#2563eb);
+    border:none;
+    padding:15px;
+    border-radius:14px;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* RESPONSIVO */
+
+@media(max-width:900px){
+
+.sidebar{
+    display:none;
+}
+
+.main{
+    margin-left:0;
+}
+
+.cart-modal{
+    width:100%;
+}
+
+}
+
+</style>
+
+
+
+
+<div class="sidebar">
+
+<div class="logo">
+LUZOLO-TEC
+</div>
+
+<ul class="menu">
+<li><a href="#">📊 Dashboard</a></li>
+<li><a href="#">📦 Produtos</a></li>
+<li><a href="#">🛒 Vendas</a></li>
+<li><a href="#">👥 Clientes</a></li>
+<li><a href="#">⚙ Configurações</a></li>
+</ul>
+
+</div>
+
+<!-- MAIN -->
+
+<div class="main">
+
+<div class="top-bar">
+
+<h1>Actualizar Produtos</h1>
+
+<div class="search-box">
+<input type="text" id="searchInput"
+placeholder="Pesquisar produtos...">
+</div>
+
+<div class="cart-box" onclick="abrirCarrinho()">
+🛒 Carrinho
+<span id="cart-count">0</span>
+</div>
+
+</div>
+
+<!-- SLIDER -->
+
+<div class="slider">
+
+<div class="slides" id="slides">
+
+<div class="slide">
+<img src="https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=1200&auto=format&fit=crop">
+
+<div class="slide-text">
+<h2>Headphones Premium</h2>
+<p>Qualidade de som profissional</p>
+</div>
+</div>
+
+<div class="slide">
+<img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200&auto=format&fit=crop">
+
+<div class="slide-text">
+<h2>Carregadores Turbo</h2>
+<p>Carregamento ultra rápido</p>
+</div>
+</div>
+
+<div class="slide">
+<img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=1200&auto=format&fit=crop">
+
+<div class="slide-text">
+<h2>Smartwatch Moderno</h2>
+<p>Tecnologia inteligente</p>
+</div>
+</div>
+
+</div>
+
+<button class="prev" onclick="prevSlide()">
+❮
+</button>
+
+<button class="next" onclick="nextSlide()">
+❯
+</button>
+
+<div class="dots">
+<span class="dot active"></span>
+<span class="dot"></span>
+<span class="dot"></span>
+</div>
+
+</div>
+
+<!-- PRODUTOS -->
+
+<div class="products">
+
+<!-- CARD -->
+
+<div class="card">
+
+<img src="https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=1200&auto=format&fit=crop">
+
+<div class="card-content">
+
+<h3>Headphones Pro</h3>
+
+<div class="price">
+25.000 Kz
+</div>
+
+<div class="stock">
+✔ Em Stock
+</div>
+
+<button class="add-btn buy-btn"
+data-name="Headphones Pro"
+data-price="25000"
+data-image="https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=1200&auto=format&fit=crop">
+
+Comprar
+
+</button>
+
+</div>
+
+</div>
+
+<!-- CARD -->
+
+<div class="card">
+
+<img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200&auto=format&fit=crop">
+
+<div class="card-content">
+
+<h3>Carregador Turbo</h3>
+
+<div class="price">
+8.500 Kz
+</div>
+
+<div class="stock">
+✔ Em Stock
+</div>
+
+<button class="add-btn buy-btn"
+data-name="Carregador Turbo"
+data-price="8500"
+data-image="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200&auto=format&fit=crop">
+
+Comprar
+
+</button>
+
+</div>
+
+</div>
+
+<!-- CARD -->
+
+<div class="card">
+
+<img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=1200&auto=format&fit=crop">
+
+<div class="card-content">
+
+<h3>Smartwatch X</h3>
+
+<div class="price">
+35.000 Kz
+</div>
+
+<div class="stock">
+✔ Em Stock
+</div>
+
+<button class="add-btn buy-btn"
+data-name="Smartwatch X"
+data-price="35000"
+data-image="https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=1200&auto=format&fit=crop">
+
+Comprar
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- FORM -->
+
+<div class="form-box">
+
+<h2>Adicionar Produto</h2>
+
+<form id="productForm">
+
+<div class="form-grid">
+
+<div class="input-group">
+<label>Nome Produto</label>
+<input type="text" required>
+</div>
+
+<div class="input-group">
+<label>Preço</label>
+<input type="number" required>
+</div>
+
+<div class="input-group">
+<label>Quantidade</label>
+<input type="number" required>
+</div>
+
+<div class="input-group">
+<label>Categoria</label>
+
+<select>
+<option>Headphones</option>
+<option>Smartwatch</option>
+<option>Carregadores</option>
+<option>Bluetooth</option>
+</select>
+
+</div>
+
+<div class="input-group">
+<label>Imagem</label>
+<input type="file">
+</div>
+
+</div>
+
+<button class="save-btn">
+Guardar Produto
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+<!-- CARRINHO -->
+
+<div class="cart-modal" id="cartModal">
+
+<div class="cart-content">
+
+<div class="cart-header">
+
+<h2>🛒 Meu Carrinho</h2>
+
+<button class="close-cart"
+onclick="fecharCarrinho()">
+✖
+</button>
+
+</div>
+
+<div id="cart-items">
+
+<p style="color:#94a3b8;">
+Nenhum produto adicionado.
+</p>
+
+</div>
+
+<div class="cart-footer">
+
+<h3>
+Total:
+<span id="cart-total">
+0 Kz
+</span>
+</h3>
+
+<button class="checkout-btn">
+Finalizar Compra
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- JAVASCRIPT -->
+
+<script>
+
+/* PESQUISA */
+
+const searchInput =
+document.getElementById("searchInput");
+
+searchInput.addEventListener("keyup", () => {
+
+let filter =
+searchInput.value.toLowerCase();
+
+let cards =
+document.querySelectorAll(".card");
+
+cards.forEach(card => {
+
+let title =
+card.querySelector("h3")
+.innerText.toLowerCase();
+
+if(title.includes(filter)){
+
+card.style.display = "block";
+
+}else{
+
+card.style.display = "none";
+
+}
+
+});
+
+});
+
+/* SLIDER */
+
+let currentSlide = 0;
+
+const slides =
+document.getElementById("slides");
+
+const totalSlides =
+document.querySelectorAll(".slide").length;
+
+const dots =
+document.querySelectorAll(".dot");
+
+function updateSlider(){
+
+slides.style.transform =
+`translateX(-${currentSlide * 100}%)`;
+
+dots.forEach(dot => {
+dot.classList.remove("active");
+});
+
+dots[currentSlide]
+.classList.add("active");
+
+}
+
+function nextSlide(){
+
+currentSlide++;
+
+if(currentSlide >= totalSlides){
+currentSlide = 0;
+}
+
+updateSlider();
+
+}
+
+function prevSlide(){
+
+currentSlide--;
+
+if(currentSlide < 0){
+currentSlide = totalSlides - 1;
+}
+
+updateSlider();
+
+}
+
+setInterval(() => {
+
+nextSlide();
+
+},4000);
+
+dots.forEach((dot,index)=>{
+
+dot.addEventListener("click",()=>{
+
+currentSlide = index;
+
+updateSlider();
+
+});
+
+});
+
+/* GUARDAR PRODUTO */
+
+const form =
+document.getElementById("productForm");
+
+form.addEventListener("submit", function(e){
+
+e.preventDefault();
+
+let mensagem =
+new SpeechSynthesisUtterance(
+"Produto guardado com sucesso"
+);
+
+mensagem.lang = "pt-PT";
+
+speechSynthesis.speak(mensagem);
+
+const btn =
+document.querySelector(".save-btn");
+
+btn.innerHTML =
+"✔ Produto Guardado";
+
+btn.style.background =
+"#16a34a";
+
+setTimeout(() => {
+
+btn.innerHTML =
+"Guardar Produto";
+
+btn.style.background =
+"linear-gradient(90deg,#06b6d4,#2563eb)";
+
+},3000);
+
+});
+
+/* CARRINHO */
+
+let cart = [];
+
+function abrirCarrinho(){
+
+document.getElementById("cartModal")
+.classList.add("active");
+
+}
+
+function fecharCarrinho(){
+
+document.getElementById("cartModal")
+.classList.remove("active");
+
+}
+
+const buyButtons =
+document.querySelectorAll(".buy-btn");
+
+buyButtons.forEach(button => {
+
+button.addEventListener("click", () => {
+
+const product = {
+
+name: button.dataset.name,
+price: parseInt(button.dataset.price),
+image: button.dataset.image
+
+};
+
+cart.push(product);
+
+actualizarCarrinho();
+
+let fala =
+new SpeechSynthesisUtterance(
+"Produto adicionado ao carrinho"
+);
+
+fala.lang = "pt-PT";
+
+speechSynthesis.speak(fala);
+
+});
+
+});
+
+function actualizarCarrinho(){
+
+const cartItems =
+document.getElementById("cart-items");
+
+const cartCount =
+document.getElementById("cart-count");
+
+const cartTotal =
+document.getElementById("cart-total");
+
+cartItems.innerHTML = "";
+
+let total = 0;
+
+cart.forEach((item,index) => {
+
+total += item.price;
+
+cartItems.innerHTML += `
+
+<div class="cart-item">
+
+<img src="${item.image}">
+
+<div>
+
+<h4>${item.name}</h4>
+
+<p>${item.price.toLocaleString()} Kz</p>
+
+<button class="remove-btn"
+onclick="removerItem(${index})">
+
+Eliminar
+
+</button>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+if(cart.length === 0){ 
+
+cartItems.innerHTML = `
+<p style="color:#94a3b8;">
+Nenhum produto adicionado.
+</p>
+`;
+
+}
+
+cartCount.innerText = cart.length;
+
+cartTotal.innerText =
+total.toLocaleString() + " Kz";
+
+}
+
+function removerItem(index){
+
+cart.splice(index,1);
+
+actualizarCarrinho();
+
+}
+
+document.querySelector(".checkout-btn")
+.addEventListener("click", () => {
+
+if(cart.length === 0){
+
+alert("Carrinho vazio");
+
+return;
+
+}
+
+let voz =
+new SpeechSynthesisUtterance(
+"Compra finalizada com sucesso"
+);
+
+voz.lang = "pt-PT";
+
+speechSynthesis.speak(voz);
+
+alert("Compra realizada com sucesso!");
+
+cart = [];
+
+actualizarCarrinho();
+
+});
+
+</script>
+

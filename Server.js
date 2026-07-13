@@ -73,10 +73,10 @@ app.use(passport.session());
 // ==============================================================
 // MIDDLEWARE PERSONALIZADO
 // ==============================================================
-app.use(function(req, res, next) { 
-    res.locals.sucess_msg = req.flash("sucess_msg");
-    res.locals.error_msg = req.flash("error_msg");
-    res.locals.error = req.flash("error");
+app.use(function(req, res, next) {
+    res.locals.success_msg = req.flash("success_msg"); // 2 CC
+res.locals.error_msg = req.flash("error_msg");
+res.locals.error = req.flash("error");
     res.locals.user = req.user || null;
     next();
 });
@@ -86,12 +86,12 @@ app.use(function(req, res, next) {
 // CONEXÃO COM O BANCO DE DADOS
 // ===========================================================
 const sequelize = new Sequelize(
-process.env.MYSQL_DATABASE,
-process.env.MYSQL_USER,
-process.env.MYSQL_PASSWORD,
+process.env.MYSQL_ADDON_DB || process.env.MYSQL_DATABASE,
+process.env.MYSQL_ADDON_USER || process.env.MYSQL_USER,
+process.env.MYSQL_ADDON_PASSWORD || process.env.MYSQL_PASSWORD,
 {
- host: process.env.MYSQL_HOST,
- port: process.env.MYSQL_PORT || 3306,
+ host: process.env.MYSQL_ADDON_HOST || process.env.MYSQL_HOST,
+ port: process.env.MYSQL_ADDON_PORT || process.env.MYSQL_PORT || 3306,
  dialect:"mysql",
  logging: false
 });

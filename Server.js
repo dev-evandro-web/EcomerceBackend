@@ -131,8 +131,9 @@ const Ecomerce = sequelize.define("ecomerce", {
 
 
 // Sincronizar a tabela
-
+/*
 Ecomerce.sync();
+*/
 
 
 // ============================================================

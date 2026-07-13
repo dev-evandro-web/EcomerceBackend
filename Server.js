@@ -51,7 +51,7 @@ app.use(bodyparser.urlencoded({ extended: false }));
 // CONFIGURAÇÃO DE SESSÕES
 // =====================================================================
 app.use(session({
-    secret: "segredo-super-secreto-123", 
+   secret: process.env.SESSION_SECRET,
     resave: false, // Booleano correto
     saveUninitialized: false, // Booleano correto
     cookie: {
@@ -86,12 +86,14 @@ app.use(function(req, res, next) {
 // CONEXÃO COM O BANCO DE DADOS
 // ===========================================================
 const sequelize = new Sequelize(
-process.env.DB_NAME,
-process.env.DB_USER,
-process.env.DB_PASSWORD,
+process.env.MYSQL_DATABASE,
+process.env.MYSQL_USER,
+process.env.MYSQL_PASSWORD,
 {
- host: process.env.DB_HOST,
- dialect:"mysql"
+ host: process.env.MYSQL_HOST,
+ port: process.env.MYSQL_PORT || 3306,
+ dialect:"mysql",
+ logging: false
 });
 
 sequelize.authenticate()

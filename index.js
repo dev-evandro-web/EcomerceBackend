@@ -11,16 +11,14 @@ const app = express();
 const Sequelize = require("sequelize");
 const handlebars = require("express-handlebars");
 
-
-
 // ========================================================
 // IMPORTAÇÃO PARA AUTENTICAÇÃO 
 //=========================================================
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
-//const session = require("express-session");
-const flash = require("connect-flash");
+const session = require("express-session"); // REABILITADO
+const flash = require("connect-flash");     // REABILITADO
 
 // ========================================================
 // CONFIGURAÇÃO DE HANDLEBARS
@@ -49,51 +47,53 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // =====================================================================
-// CONFIGURAÇÃO DE SESSÕES
+// CONFIGURAÇÃO DE SESSÕES (Necessário para Passport e Flash funcionarem)
 // =====================================================================
-/*
 app.use(session({
-    
-   secret: process.env.SESSION_SECRET,
-    resave: false, // Booleano correto
-    saveUninitialized: false, // Booleano correto
+    secret: process.env.SESSION_SECRET || "chave_secreta_provisoria", // Evita crash se o .env sumir
+    resave: false, 
+    saveUninitialized: false, 
     cookie: {
         maxAge: 1000 * 60 * 60 * 24 // 24 horas
     }
 }));
-*/
+
 // ==========================================================
 // CONFIGURAÇÃO DO FLASH
 // =========================================================
-
-//app.use(flash());
+app.use(flash()); // REABILITADO
 
 // =======================================================
 // INICIALIZAÇÃO DO PASSPORT
 // =======================================================
 app.use(passport.initialize());
-//app.use(passport.session());
+app.use(passport.session()); // REABILITADO para persistir a sessão de login
 
 // ==============================================================
 // MIDDLEWARE PERSONALIZADO
 // ==============================================================
-/*
 app.use(function(req, res, next) {
-    res.locals.success_msg = req.flash("success_msg"); // 2 CC
-res.locals.error_msg = req.flash("error_msg");
-res.locals.error = req.flash("error");
+    res.locals.success_msg = req.flash("success_msg"); 
+    res.locals.error_msg = req.flash("error_msg");
+    res.locals.error = req.flash("error");
     res.locals.user = req.user || null;
     next();
-});*/
-
+});
 
 // ============================================================
 // CONEXÃO COM O BANCO DE DADOS
 // ===========================================================
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
+// Certifique-se de preencher a variável DATABASE_URL no painel da Vercel!
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+    console.error("ERRO CRÍTICO: A variável DATABASE_URL não está definida no ambiente.");
+}
+
+const sequelize = new Sequelize(databaseUrl, {
   dialect: 'mysql',
-  logging: false
-  
+  logging: false,
+  dialectModule: require('mysql2') // Extremamente recomendado para deploy na Vercel evitar problemas com drivers nativos
 });
 
 sequelize.authenticate()
@@ -129,28 +129,18 @@ const Ecomerce = sequelize.define("ecomerce", {
     timestamps: false
 });
 
-
-// Sincronizar a tabela
-/*
-Ecomerce.sync();
-*/
-
-
 // ============================================================
 // CONFIGURAÇÃO DO PASSPORT - ESTRATÉGIA LOCAL
 // ==============================================================
-
 passport.use(new LocalStrategy(
 {
     usernameField: 'email',
     passwordField: 'senha'
 },
 (email, senha, done)=>{
-
     Ecomerce.findOne({
         where:{ email: email }
     }).then(usuario=>{
-
         if(!usuario){
             return done(null,false,{
                 message:"Usuário não encontrado"
@@ -158,7 +148,6 @@ passport.use(new LocalStrategy(
         }
 
         bcrypt.compare(senha, usuario.senha,(erro,resultado)=>{
-
             if(resultado){
                 return done(null,usuario);
             }else{
@@ -166,18 +155,11 @@ passport.use(new LocalStrategy(
                     message:"Senha incorreta"
                 });
             }
-
         });
-
     }).catch((erro)=>{
         return done(erro);
     });
-
 }));
-
-
-
-
        
 // =============================================
 // SERIALIZE E DESERIALIZE USER
@@ -197,7 +179,6 @@ passport.deserializeUser((id, done) => {
 // ==============================================
 // MIDDLEWARE DE AUTENTICAÇÃO
 // ==============================================
-/*
 function verificarAuthenticacao(req, res, next) {
     if (req.isAuthenticated()) {
         return next();
@@ -205,7 +186,6 @@ function verificarAuthenticacao(req, res, next) {
     req.flash("error_msg", "Você precisa estar logado para acessar esta página.");
     res.redirect("/login");
 }
-    */
 
 // ==============================================
 // ROTAS DE AUTENTICAÇÃO
@@ -217,19 +197,17 @@ app.get("/login", (req, res) => {
 });
 
 // Processar o Login
-app.post("/login", (passport.authenticate("local", {
+app.post("/login", passport.authenticate("local", {
     successRedirect: "/dashboard",
     failureRedirect: "/login",
     failureFlash: true
-})));
+}));
 
 // Tela de Registro de Usuários (Público)
 app.get("/registro", (req, res) => {
     res.render("registro");
 });
 
-
-/*
 // Processar Registro com Criptografia
 app.post("/registro/novo", (req, res) => {
     if (req.body.senha !== req.body.confirma_senha) {
@@ -253,8 +231,7 @@ app.post("/registro/novo", (req, res) => {
                         nome: req.body.nome,
                         email: req.body.email,
                         senha: hash,
-                        confirma_senha:hash
-                        
+                        confirma_senha: hash
                     }).then(() => {
                         req.flash("success_msg", "Usuário registrado com sucesso! Faça login.");
                         res.redirect("/login");
@@ -268,33 +245,25 @@ app.post("/registro/novo", (req, res) => {
     });
 }); 
 
-
-*/
-      
-  
 // Rota de Logout
-/*
 app.get("/logout", (req, res, next) => {
     req.logout(function(err) {
         if (err) { return next(err); }
-        req.flash("sucess_msg", "Deslogado com sucesso.");
+        req.flash("success_msg", "Deslogado com sucesso.");
         res.redirect("/login");
     });
 });
-*/
+
 // =============================================
 // ROTAS DO CRUD ORIGINAL (PROTEGIDOS)
 // =============================================
 
-// ROTA: listar usuários
-
-/*
 app.get("/ler", verificarAuthenticacao, function(req, res) {
     Ecomerce.findAll({ order: [['id', 'DESC']] })
     .then(function(usuarios) {
         res.render("listagem", {
             usuarios: usuarios,
-            user_logado: req.user // Variável renomeada para evitar conflito de nomes
+            user_logado: req.user 
         });
     })
     .catch(function(erro) {
@@ -303,16 +272,10 @@ app.get("/ler", verificarAuthenticacao, function(req, res) {
     });
 });
 
-// ROTA FORMULÁRIO DE CADASTRO
 app.get("/cadastro", verificarAuthenticacao, function(req, res) {
     res.render("cadastro", { usuario: req.user });
 });
 
-*/
-
-// ROTA PROCESSAR CADASTRO DENTRO DO SISTEMA
-
-/*
 app.post("/receber", verificarAuthenticacao, function(req, res) {
     bcrypt.genSalt(10, (err, salt) => {
         bcrypt.hash("null", salt, (err, hash) => { 
@@ -321,10 +284,9 @@ app.post("/receber", verificarAuthenticacao, function(req, res) {
                 email: req.body.email,
                 senha: hash,
                 confirma_senha: hash
-            
             })
             .then(function() {
-                req.flash("sucess_msg", "Usuário cadastrado com sucesso");
+                req.flash("success_msg", "Usuário cadastrado com sucesso");
                 res.redirect("/login");
             })
             .catch(function(erro) {
@@ -333,16 +295,14 @@ app.post("/receber", verificarAuthenticacao, function(req, res) {
             });
         });
     });
-});  */
+});
 
-// ROTA DELETAR USUÁRIO
-/*
 app.get("/deletar/:id", verificarAuthenticacao, function(req, res) {
     Ecomerce.destroy({
         where: { id: req.params.id }
     })
     .then(function() {
-        req.flash("sucess_msg", "Usuário deletado com sucesso!");
+        req.flash("success_msg", "Usuário deletado com sucesso!");
         res.redirect("/ler");
     })
     .catch(function(erro) {
@@ -350,11 +310,7 @@ app.get("/deletar/:id", verificarAuthenticacao, function(req, res) {
         res.redirect("/ler");
     });
 });
-*/
 
-// ROTA FORMULÁRIO DE EDIÇÃO
-
-/*
 app.get("/editar/:id", verificarAuthenticacao, function(req, res) {
     Ecomerce.findByPk(req.params.id)
     .then(function(usuario) {
@@ -367,11 +323,8 @@ app.get("/editar/:id", verificarAuthenticacao, function(req, res) {
         req.flash("error_msg", "Usuário não encontrado");
         res.redirect("/ler");
     });
-});   */
+});
 
-// ROTA ATUALIZAR USUÁRIO
-
-/*
 app.post("/atualizar", verificarAuthenticacao, function(req, res) {
     Ecomerce.update(
         {
@@ -381,20 +334,19 @@ app.post("/atualizar", verificarAuthenticacao, function(req, res) {
             email: req.body.email
         },
         {
-            where: { id: req.body.id } // Ajustado de req.body para req.body.id
+            where: { id: req.body.id } 
         }
     )
     .then(function() {
-        req.flash("sucess_msg", "Usuário atualizado com sucesso!");
+        req.flash("success_msg", "Usuário atualizado com sucesso!");
         res.redirect("/ler");
     })
     .catch(function(erro) {
         req.flash("error_msg", "Erro ao atualizar usuário");
         res.redirect("/ler");
     });
-});  */
+});
 
-// Rota para o React Native buscar os dados (Sem o middleware de sessão do web para facilitar no Mobile)
 app.get("/api/usuarios", function(req, res) {
     Ecomerce.findAll({ order: [['id', 'DESC']] })
     .then(function(usuarios) {
@@ -421,8 +373,6 @@ app.get("/produto/:id", (req, res) => {
     res.send("Produto ID: " + id);
 });
 
-
-
 // ==========================
 // ROTA DASHBOARD
 // =========================
@@ -432,9 +382,16 @@ app.get("/dashboard", verificarAuthenticacao, function(req, res){
     });
 });
 
-
 // =============================================================
 // INICIALIZA O SERVIDOR
 // =============================================================
-const porta = process.env.PORT || 3000
+const porta = process.env.PORT || 3000;
+
+// Garante que o servidor rode localmente, mas permite que a Vercel controle a exportação
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(porta, () => {
+        console.log("Servidor rodando localmente na porta ${porta}");
+    });
+}
+
 module.exports = app;

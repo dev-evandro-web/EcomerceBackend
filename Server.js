@@ -10,6 +10,7 @@ const app = express();
 // =======================================================
 const Sequelize = require("sequelize");
 const handlebars = require("express-handlebars");
+const bodyparser = require("body-parser")
 
 
 // ========================================================

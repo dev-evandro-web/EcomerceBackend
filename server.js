@@ -18,7 +18,7 @@ const bodyparser = require("body-parser")
 //=========================================================
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const session = require("express-session");
 const flash = require("connect-flash");
 
@@ -88,7 +88,7 @@ res.locals.error = req.flash("error");
 // ===========================================================
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'mysql',
-  dialectModule: require('mysql2'),
+   dialectModule: require('mysql2'),
   logging: false
   
 });
@@ -249,7 +249,7 @@ app.post("/registro/novo", (req, res) => {
                         confirma_senha:hash
                         
                     }).then(() => {
-                        req.flash("sucess_msg", "Usuário registrado com sucesso! Faça login.");
+                        req.flash("success_msg", "Usuário registrado com sucesso! Faça login.");
                         res.redirect("/login");
                     }).catch((err) => {
                         req.flash("error_msg", "Erro ao criar usuário.");

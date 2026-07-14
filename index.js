@@ -254,6 +254,12 @@ app.get("/logout", (req, res, next) => {
     });
 });
 
+
+// Adicione isso junto com as suas outras rotas
+app.get("/", (req, res) => {
+    res.redirect("/login"); 
+});
+
 // =============================================
 // ROTAS DO CRUD ORIGINAL (PROTEGIDOS)
 // =============================================

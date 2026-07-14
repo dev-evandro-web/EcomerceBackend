@@ -10,7 +10,7 @@ const app = express();
 // =======================================================
 const Sequelize = require("sequelize");
 const handlebars = require("express-handlebars");
-const bodyparser = require("body-parser")
+
 
 
 // ========================================================
@@ -88,7 +88,6 @@ res.locals.error = req.flash("error");
 // ===========================================================
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'mysql',
-   dialectModule: require('mysql2'),
   logging: false
   
 });

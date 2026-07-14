@@ -51,7 +51,9 @@ app.use(express.urlencoded({ extended: false }));
 // =====================================================================
 // CONFIGURAÇÃO DE SESSÕES
 // =====================================================================
+/*
 app.use(session({
+    
    secret: process.env.SESSION_SECRET,
     resave: false, // Booleano correto
     saveUninitialized: false, // Booleano correto
@@ -59,11 +61,12 @@ app.use(session({
         maxAge: 1000 * 60 * 60 * 24 // 24 horas
     }
 }));
-
+*/
 // ==========================================================
 // CONFIGURAÇÃO DO FLASH
 // =========================================================
-app.use(flash());
+
+//app.use(flash());
 
 // =======================================================
 // INICIALIZAÇÃO DO PASSPORT
@@ -414,5 +417,5 @@ app.get("/dashboard", verificarAuthenticacao, function(req, res){
 const porta = process.env.PORT || 3000;
 
 app.listen(porta, '0.0.0.0' ,function() {
-    console.log("Servidor iniciado na porta " + porta);
+    module.exports = app;
 });

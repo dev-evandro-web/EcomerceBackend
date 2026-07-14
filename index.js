@@ -93,16 +93,14 @@ if (!databaseUrl) {
 const sequelize = new Sequelize(databaseUrl, {
   dialect: 'mysql',
   logging: false,
-  dialectModule: require('mysql2') // Extremamente recomendado para deploy na Vercel evitar problemas com drivers nativos
+  dialectModule: require('mysql2'), // Recomendado para Vercel
+  dialectOptions: {
+    ssl: {
+      rejectUnauthorized: false // <--- ISSO AQUI resolve o problema de conexão segura com a Railway!
+    }
+  }
 });
 
-sequelize.authenticate()
-    .then(function() {
-        console.log("Conectado ao banco de dados com sucesso");
-    })
-    .catch(function(erro) {
-        console.log("Erro ao se conectar com o banco de dados: " + erro);
-    });
 
 // ==============================================================
 // CRIANDO TABELA USUÁRIOS

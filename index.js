@@ -77,13 +77,14 @@ app.use(passport.initialize());
 // ==============================================================
 // MIDDLEWARE PERSONALIZADO
 // ==============================================================
+/*
 app.use(function(req, res, next) {
     res.locals.success_msg = req.flash("success_msg"); // 2 CC
 res.locals.error_msg = req.flash("error_msg");
 res.locals.error = req.flash("error");
     res.locals.user = req.user || null;
     next();
-});
+});*/
 
 
 // ============================================================
@@ -196,6 +197,7 @@ passport.deserializeUser((id, done) => {
 // ==============================================
 // MIDDLEWARE DE AUTENTICAÇÃO
 // ==============================================
+/*
 function verificarAuthenticacao(req, res, next) {
     if (req.isAuthenticated()) {
         return next();
@@ -203,6 +205,7 @@ function verificarAuthenticacao(req, res, next) {
     req.flash("error_msg", "Você precisa estar logado para acessar esta página.");
     res.redirect("/login");
 }
+    */
 
 // ==============================================
 // ROTAS DE AUTENTICAÇÃO
@@ -225,6 +228,8 @@ app.get("/registro", (req, res) => {
     res.render("registro");
 });
 
+
+/*
 // Processar Registro com Criptografia
 app.post("/registro/novo", (req, res) => {
     if (req.body.senha !== req.body.confirma_senha) {
@@ -263,7 +268,12 @@ app.post("/registro/novo", (req, res) => {
     });
 }); 
 
+
+*/
+      
+  
 // Rota de Logout
+/*
 app.get("/logout", (req, res, next) => {
     req.logout(function(err) {
         if (err) { return next(err); }
@@ -271,12 +281,14 @@ app.get("/logout", (req, res, next) => {
         res.redirect("/login");
     });
 });
-
+*/
 // =============================================
 // ROTAS DO CRUD ORIGINAL (PROTEGIDOS)
 // =============================================
 
 // ROTA: listar usuários
+
+/*
 app.get("/ler", verificarAuthenticacao, function(req, res) {
     Ecomerce.findAll({ order: [['id', 'DESC']] })
     .then(function(usuarios) {
@@ -296,7 +308,11 @@ app.get("/cadastro", verificarAuthenticacao, function(req, res) {
     res.render("cadastro", { usuario: req.user });
 });
 
+*/
+
 // ROTA PROCESSAR CADASTRO DENTRO DO SISTEMA
+
+/*
 app.post("/receber", verificarAuthenticacao, function(req, res) {
     bcrypt.genSalt(10, (err, salt) => {
         bcrypt.hash("null", salt, (err, hash) => { 
@@ -317,9 +333,10 @@ app.post("/receber", verificarAuthenticacao, function(req, res) {
             });
         });
     });
-});
+});  */
 
 // ROTA DELETAR USUÁRIO
+/*
 app.get("/deletar/:id", verificarAuthenticacao, function(req, res) {
     Ecomerce.destroy({
         where: { id: req.params.id }
@@ -333,8 +350,11 @@ app.get("/deletar/:id", verificarAuthenticacao, function(req, res) {
         res.redirect("/ler");
     });
 });
+*/
 
 // ROTA FORMULÁRIO DE EDIÇÃO
+
+/*
 app.get("/editar/:id", verificarAuthenticacao, function(req, res) {
     Ecomerce.findByPk(req.params.id)
     .then(function(usuario) {
@@ -347,9 +367,11 @@ app.get("/editar/:id", verificarAuthenticacao, function(req, res) {
         req.flash("error_msg", "Usuário não encontrado");
         res.redirect("/ler");
     });
-});
+});   */
 
 // ROTA ATUALIZAR USUÁRIO
+
+/*
 app.post("/atualizar", verificarAuthenticacao, function(req, res) {
     Ecomerce.update(
         {
@@ -370,7 +392,7 @@ app.post("/atualizar", verificarAuthenticacao, function(req, res) {
         req.flash("error_msg", "Erro ao atualizar usuário");
         res.redirect("/ler");
     });
-});
+});  */
 
 // Rota para o React Native buscar os dados (Sem o middleware de sessão do web para facilitar no Mobile)
 app.get("/api/usuarios", function(req, res) {

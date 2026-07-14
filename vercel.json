@@ -1,14 +1,5 @@
 {
   "version": 2,
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "index.js"
-    }
-  ],
-  "functions": {
-    "index.js": {
-      "includeFiles": "views/**"
-    }
-  }
+  "rewrites": [{ "source": "/(.*)", "destination": "/api/index" }],
+  "includeFiles": "views/**"
 }

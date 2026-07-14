@@ -23,15 +23,16 @@ const bcrypt = require("bcryptjs");
 // ========================================================
 // CONFIGURAÇÃO DE HANDLEBARS E ARQUIVOS ESTÁTICOS
 // =========================================================
-app.engine("handlebars", handlebars.engine({
-    defaultLayout: "main", // Garanta que tem um layout principal (geralmente views/layouts/main.handlebars)
-    allowProtoPropertiesByDefault: true,
-    allowProtoMethodsByDefault: true
-}));
+const { engine } = require('express-handlebars');
+const path = require('path');
 
-app.set("view engine", "handlebars");
-app.set("views", path.join(__dirname, "views")); 
-app.use(express.static(path.join(__dirname, "public")));
+app.engine('handlebars', engine({
+  defaultLayout: 'main',
+  layoutsDir: path.join(__dirname, '../views/layouts')
+}));
+app.set('view engine', 'handlebars');
+app.set('views', path.join(__dirname, '../views'));
+
 
 // ====================================================================
 // CONFIGURAÇÃO DE BODY PARSER
@@ -84,12 +85,7 @@ const sequelize = new Sequelize(databaseUrl, {
     acquire: 30000,
     idle: 10000
   },
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false // OBRIGATÓRIO para conexões externas (Clever Cloud, etc.)
-    }
-  }
+  dialectOptions: {}
 });
 
 sequelize.authenticate()
@@ -192,22 +188,22 @@ app.post("/login", passport.authenticate("local", {
     failureRedirect: "/login"
 }));
 
-app.get("/registro", (req, res) => {
-    res.render("registro");
+app.get("/Registro", (req, res) => {
+    res.render("Registro");
 });
 
-app.post("/registro/novo", (req, res) => {
+app.post("/Registro/novo", (req, res) => {
     if (req.body.senha !== req.body.confirma_senha) {
-        return res.redirect("/registro?erro=senhas");
+        return res.redirect("/Registro?erro=senhas");
     }
     Ecomerce.findOne({ where: { email: req.body.email } }).then((usuario) => {
         if (usuario) {
-            return res.redirect("/registro?erro=email");
+            return res.redirect("/Registro?erro=email");
         } else {
             bcrypt.genSalt(10, (erro, salt) => {
                 bcrypt.hash(req.body.senha, salt, (erro, hash) => {
                     if (erro) {
-                        return res.redirect("/registro?erro=hash");
+                        return res.redirect("/Registro?erro=hash");
                     }
                     Ecomerce.create({
                         nome: req.body.nome,
@@ -215,17 +211,17 @@ app.post("/registro/novo", (req, res) => {
                         senha: hash,
                         confirma_senha: hash
                     }).then(() => {
-                        res.redirect("/login?sucesso=registro");
+                        res.redirect("/login?sucesso=Registro");
                     }).catch((err) => {
-                        console.error("Erro ao criar registro: ", err);
-                        return res.redirect("/registro?erro=criar");
+                        console.error("Erro ao criar Registro: ", err);
+                        return res.redirect("/Registro?erro=criar");
                     });
                 });
             });
         }
     }).catch(err => {
-        console.error("Erro ao verificar email no registro: ", err);
-        res.status(500).send("Erro interno ao processar registro");
+        console.error("Erro ao verificar email no Registro: ", err);
+        res.status(500).send("Erro interno ao processar Registro");
     });
 }); 
 
@@ -361,3 +357,4 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 module.exports = app;
+module.exports.default = app;

@@ -31,7 +31,7 @@ app.engine('handlebars', engine({
   layoutsDir: path.join(__dirname, '../views/layouts')
 }));
 app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirname, '../views'));
+app.set('views', path.join(__dirname, '../views/layouts'));
 
 
 // ====================================================================
@@ -189,7 +189,7 @@ app.post("/login", passport.authenticate("local", {
 }));
 
 app.get("/Registro", (req, res) => {
-    res.render("Registro");
+    res.render("layouts/Registro");
 });
 
 app.post("/Registro/novo", (req, res) => {

@@ -4,7 +4,7 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
-const path = require("path"); // MÓDULO NATIVO DO NODE.JS
+const path = require("path");
 
 // ======================================================
 // IMPORTAR MÓDULOS DE TERCEIROS
@@ -13,8 +13,9 @@ const Sequelize = require("sequelize");
 const handlebars = require("express-handlebars");
 
 // ========================================================
-// IMPORTAÇÃO PARA AUTENTICAÇÃO
+// IMPORTAÇÃO PARA AUTENTICAÇÃO E SESSÃO
 //=========================================================
+const session = require("express-session"); // OBRIGATÓRIO instalar: npm i express-session
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
@@ -23,13 +24,14 @@ const bcrypt = require("bcryptjs");
 // CONFIGURAÇÃO DE HANDLEBARS E ARQUIVOS ESTÁTICOS
 // =========================================================
 app.engine("handlebars", handlebars.engine({
+    defaultLayout: "main", // Garanta que tem um layout principal (geralmente views/layouts/main.handlebars)
     allowProtoPropertiesByDefault: true,
     allowProtoMethodsByDefault: true
 }));
 
 app.set("view engine", "handlebars");
 app.set("views", path.join(__dirname, "views")); 
-app.use(express.static(path.join(__dirname, "public"))); 
+app.use(express.static(path.join(__dirname, "public")));
 
 // ====================================================================
 // CONFIGURAÇÃO DE BODY PARSER
@@ -38,12 +40,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // =======================================================
-// INICIALIZAÇÃO DO PASSPORT - SEM SESSION
+// CONFIGURAÇÃO DE SESSÃO (ESSENCIAL PARA O PASSPORT NO VERCEL)
 // =======================================================
+app.use(session({
+    secret: process.env.SESSION_SECRET || "chave-secreta-ecommerce",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        secure: process.env.NODE_ENV === "production", // True apenas se usar HTTPS (Vercel usa por padrão)
+        maxAge: 24 * 60 * 60 * 1000, // Mantém logado por 1 dia
+        sameSite: 'lax'
+    }
+}));
+
+// INICIALIZAÇÃO DO PASSPORT
 app.use(passport.initialize());
+app.use(passport.session()); 
 
 // ==============================================================
-// MIDDLEWARE PERSONALIZADO
+// MIDDLEWARE PERSONALIZADO (PASSAR USUÁRIO PARA AS VIEWS)
 // ==============================================================
 app.use(function(req, res, next) {
     res.locals.user = req.user || null;
@@ -51,34 +66,38 @@ app.use(function(req, res, next) {
 });
 
 // ============================================================
-// CONEXÃO COM O BANCO DE DADOS
+// CONEXÃO COM O BANCO DE DADOS (MySQL - Otimizado para Serverless)
 // ===========================================================
 const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
-    console.error("ERRO CRÍTICO: A variável DATABASE_URL não está definida no ambiente.");
-} else {
-    console.log("Variável DATABASE_URL encontrada, tentando conectar...");
+    console.error("ERRO CRÍTICO: DATABASE_URL não foi definida nas Variáveis de Ambiente!");
 }
 
 const sequelize = new Sequelize(databaseUrl, {
   dialect: 'mysql',
   logging: false,
-  dialectModule: require('mysql2'), 
+  dialectModule: require('mysql2'), // OBRIGATÓRIO para funcionar no Vercel
+  pool: {
+    max: 5,      // Limita conexões para não estourar o Clever Cloud
+    min: 0,
+    acquire: 30000,
+    idle: 10000
+  },
   dialectOptions: {
     ssl: {
       require: true,
-      rejectUnauthorized: false // Obrigatório pro Clever Cloud
+      rejectUnauthorized: false // OBRIGATÓRIO para conexões externas (Clever Cloud, etc.)
     }
   }
 });
 
 sequelize.authenticate()
-    .then(() => console.log("Conectado ao banco de dados com sucesso"))
-    .catch(erro => console.log("Erro ao se conectar com o banco de dados: " + erro));
+    .then(() => console.log("Conectado ao banco de dados com sucesso!"))
+    .catch(erro => console.error("Erro ao conectar no banco MySQL: " + erro));
 
 // ==============================================================
-// CRIANDO TABELA USUÁRIOS
+// MODEL DE USUÁRIOS
 // ==============================================================
 const Ecomerce = sequelize.define("ecomerce", {
     id: {
@@ -108,8 +127,10 @@ const Ecomerce = sequelize.define("ecomerce", {
     timestamps: false
 });
 
-// Sincroniza a tabela 1x. Depois pode comentar
-sequelize.sync();
+// Sincroniza sem travar o carregamento do Serverless
+sequelize.sync()
+    .then(() => console.log("Tabelas sincronizadas"))
+    .catch(err => console.error("Erro na sincronização de tabelas: ", err));
 
 // ============================================================
 // CONFIGURAÇÃO DO PASSPORT - ESTRATÉGIA LOCAL
@@ -117,26 +138,18 @@ sequelize.sync();
 passport.use(new LocalStrategy(
 {
     usernameField: 'email',
-    passwordField: 'senha',
-    passReqToCallback: false
+    passwordField: 'senha'
 },
 (email, senha, done)=>{
-    Ecomerce.findOne({
-        where:{ email: email }
-    }).then(usuario=>{
+    Ecomerce.findOne({ where:{ email: email } }).then(usuario=>{
         if(!usuario){
-            return done(null, false, {
-                message: "Usuário não encontrado"
-            });
+            return done(null, false, { message: "Usuário não encontrado" });
         }
-
         bcrypt.compare(senha, usuario.senha, (erro, resultado)=>{
             if(resultado){
                 return done(null, usuario);
             } else {
-                return done(null, false, {
-                    message: "Senha incorreta"
-                });
+                return done(null, false, { message: "Senha incorreta" });
             }
         });
     }).catch((erro)=>{
@@ -144,23 +157,21 @@ passport.use(new LocalStrategy(
     });
 }));
         
-// =============================================
-// SERIALIZE E DESERIALIZE USER
-// ==============================================
 passport.serializeUser((usuario, done) => {
     done(null, usuario.id);
 });
 
 passport.deserializeUser((id, done) => {
     Ecomerce.findByPk(id).then((usuario) => {
-        done(null, usuario);
+        // Converte para objeto plano para o Handlebars conseguir ler sem erros de segurança
+        done(null, usuario ? usuario.get({ plain: true }) : null);
     }).catch((err) => {
         done(err, null);
     });
 });
 
 // ==============================================
-// MIDDLEWARE DE AUTENTICAÇÃO SEM FLASH
+// MIDDLEWARE DE AUTENTICAÇÃO
 // ==============================================
 function verificarAuthenticacao(req, res, next) {
     if (req.isAuthenticated()) {
@@ -172,29 +183,23 @@ function verificarAuthenticacao(req, res, next) {
 // ==============================================
 // ROTAS DE AUTENTICAÇÃO
 // ==============================================
-
-// Tela de Login
 app.get("/login", (req, res) => {
     res.render("login");
 });
 
-// Processar o Login
 app.post("/login", passport.authenticate("local", {
     successRedirect: "/dashboard",
     failureRedirect: "/login"
 }));
 
-// Tela de Registro de Usuários (Público)
 app.get("/registro", (req, res) => {
     res.render("registro");
 });
 
-// Processar Registro com Criptografia
 app.post("/registro/novo", (req, res) => {
     if (req.body.senha !== req.body.confirma_senha) {
         return res.redirect("/registro?erro=senhas");
     }
-
     Ecomerce.findOne({ where: { email: req.body.email } }).then((usuario) => {
         if (usuario) {
             return res.redirect("/registro?erro=email");
@@ -204,7 +209,6 @@ app.post("/registro/novo", (req, res) => {
                     if (erro) {
                         return res.redirect("/registro?erro=hash");
                     }
-
                     Ecomerce.create({
                         nome: req.body.nome,
                         email: req.body.email,
@@ -213,15 +217,18 @@ app.post("/registro/novo", (req, res) => {
                     }).then(() => {
                         res.redirect("/login?sucesso=registro");
                     }).catch((err) => {
+                        console.error("Erro ao criar registro: ", err);
                         return res.redirect("/registro?erro=criar");
                     });
                 });
             });
         }
+    }).catch(err => {
+        console.error("Erro ao verificar email no registro: ", err);
+        res.status(500).send("Erro interno ao processar registro");
     });
 }); 
 
-// Rota de Logout
 app.get("/logout", (req, res, next) => {
     req.logout(function(err) {
         if (err) { return next(err); }
@@ -229,24 +236,22 @@ app.get("/logout", (req, res, next) => {
     });
 });
 
-// Rota raiz redireciona para login
 app.get("/", (req, res) => {
     res.redirect("/login"); 
 });
 
 // =============================================
-// ROTAS DO CRUD (PROTEGIDOS)
+// ROTAS DO CRUD 
 // =============================================
-
 app.get("/ler", verificarAuthenticacao, function(req, res) {
     Ecomerce.findAll({ order: [['id', 'DESC']] })
     .then(function(usuarios) {
-        res.render("listagem", {
-            usuarios: usuarios,
-            user_logado: req.user 
-        });
+        // Mapeia para objetos puros para evitar erros do Handlebars em produção
+        const usuariosPuros = usuarios.map(u => u.get({ plain: true }));
+        res.render("listagem", { usuarios: usuariosPuros, user_logado: req.user });
     })
     .catch(function(erro) {
+        console.error("Erro ao buscar usuários: ", erro);
         res.redirect("/login?erro=buscar");
     });
 });
@@ -257,7 +262,7 @@ app.get("/cadastro", verificarAuthenticacao, function(req, res) {
 
 app.post("/receber", verificarAuthenticacao, function(req, res) {
     bcrypt.genSalt(10, (err, salt) => {
-        bcrypt.hash("null", salt, (err, hash) => { 
+        bcrypt.hash(req.body.senha, salt, (err, hash) => { 
             Ecomerce.create({
                 nome: req.body.nome,
                 email: req.body.email,
@@ -275,9 +280,7 @@ app.post("/receber", verificarAuthenticacao, function(req, res) {
 });
 
 app.get("/deletar/:id", verificarAuthenticacao, function(req, res) {
-    Ecomerce.destroy({
-        where: { id: req.params.id }
-    })
+    Ecomerce.destroy({ where: { id: req.params.id } })
     .then(function() {
         res.redirect("/ler?sucesso=deletar");
     })
@@ -289,9 +292,9 @@ app.get("/deletar/:id", verificarAuthenticacao, function(req, res) {
 app.get("/editar/:id", verificarAuthenticacao, function(req, res) {
     Ecomerce.findByPk(req.params.id)
     .then(function(usuario) {
-        res.render("editar", {
-            usuario_editar: usuario,
-            usuario: req.user
+        res.render("editar", { 
+            usuario_editar: usuario ? usuario.get({ plain: true }) : null, 
+            usuario: req.user 
         });
     })
     .catch(function(erro) {
@@ -301,13 +304,8 @@ app.get("/editar/:id", verificarAuthenticacao, function(req, res) {
 
 app.post("/atualizar", verificarAuthenticacao, function(req, res) {
     Ecomerce.update(
-        {
-            nome: req.body.nome,
-            email: req.body.email
-        },
-        {
-            where: { id: req.body.id } 
-        }
+        { nome: req.body.nome, email: req.body.email },
+        { where: { id: req.body.id } }
     )
     .then(function() {
         res.redirect("/ler?sucesso=atualizar");
@@ -329,7 +327,7 @@ app.get("/api/usuarios", function(req, res) {
 });
 
 // ==============================================================
-// TRABALHANDO COM PRODUTOS (ROTAS PÚBLICAS)
+// OUTRAS PÁGINAS
 // =============================================================
 app.get("/produtos", (req, res) => {
     res.render("produtos");
@@ -345,12 +343,10 @@ app.get("/produto/:id", (req, res) => {
 });
 
 // ==========================
-// ROTA DASHBOARD (PROTEGIDO)
+// ROTA DASHBOARD
 // =========================
 app.get("/dashboard", verificarAuthenticacao, function(req, res){
-    res.render("dashboard", {
-        usuario: req.user
-    });
+    res.render("dashboard", { usuario: req.user });
 });
 
 // =============================================================
@@ -360,7 +356,7 @@ const porta = process.env.PORT || 3000;
 
 if (process.env.NODE_ENV !== "production") {
   app.listen(porta, () => {
-    console.log("Servidor rodando na porta ${porta}");
+    console.log('Servidor rodando na porta ${porta}');
   });
 }
 

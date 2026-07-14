@@ -1,44 +1,35 @@
-//=====================================================
-// IMPORTANDO FRAMEWORK EXPRESS
-//======================================================
+// ======================================================
+// IMPORTANDO FRAMEWORK EXPRESS E MÓDULOS NATIVOS
+// ======================================================
 require("dotenv").config();
 const express = require("express");
 const app = express();
+const path = require("path"); // MÓDULO NATIVO DO NODE.JS
 
 // ======================================================
-//        IMPORTAR MÓDULOS
+// IMPORTAR MÓDULOS DE TERCEIROS
 // =======================================================
 const Sequelize = require("sequelize");
 const handlebars = require("express-handlebars");
 
 // ========================================================
-// IMPORTAÇÃO PARA AUTENTICAÇÃO 
+// IMPORTAÇÃO PARA AUTENTICAÇÃO
 //=========================================================
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
-const session = require("express-session"); // REABILITADO
-const flash = require("connect-flash");     // REABILITADO
 
 // ========================================================
-// CONFIGURAÇÃO DE HANDLEBARS
+// CONFIGURAÇÃO DE HANDLEBARS E ARQUIVOS ESTÁTICOS
 // =========================================================
 app.engine("handlebars", handlebars.engine({
     allowProtoPropertiesByDefault: true,
-    allowProtoMethodsByDefault: true,
-    helpers: {
-        isAuthenticated: function(req) {
-            return req.isAuthenticated();
-        }
-    },
-    currentUser: function(req) {
-        return req.user;
-    }
+    allowProtoMethodsByDefault: true
 }));
 
 app.set("view engine", "handlebars");
-app.set("views", "./views");
-app.use(express.static("public"));
+app.set("views", path.join(__dirname, "views")); 
+app.use(express.static(path.join(__dirname, "public"))); 
 
 // ====================================================================
 // CONFIGURAÇÃO DE BODY PARSER
@@ -46,36 +37,15 @@ app.use(express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// =====================================================================
-// CONFIGURAÇÃO DE SESSÕES (Necessário para Passport e Flash funcionarem)
-// =====================================================================
-app.use(session({
-    secret: process.env.SESSION_SECRET || "chave_secreta_provisoria", // Evita crash se o .env sumir
-    resave: false, 
-    saveUninitialized: false, 
-    cookie: {
-        maxAge: 1000 * 60 * 60 * 24 // 24 horas
-    }
-}));
-
-// ==========================================================
-// CONFIGURAÇÃO DO FLASH
-// =========================================================
-app.use(flash()); // REABILITADO
-
 // =======================================================
-// INICIALIZAÇÃO DO PASSPORT
+// INICIALIZAÇÃO DO PASSPORT - SEM SESSION
 // =======================================================
 app.use(passport.initialize());
-app.use(passport.session()); // REABILITADO para persistir a sessão de login
 
 // ==============================================================
 // MIDDLEWARE PERSONALIZADO
 // ==============================================================
 app.use(function(req, res, next) {
-    res.locals.success_msg = req.flash("success_msg"); 
-    res.locals.error_msg = req.flash("error_msg");
-    res.locals.error = req.flash("error");
     res.locals.user = req.user || null;
     next();
 });
@@ -83,36 +53,47 @@ app.use(function(req, res, next) {
 // ============================================================
 // CONEXÃO COM O BANCO DE DADOS
 // ===========================================================
-// Certifique-se de preencher a variável DATABASE_URL no painel da Vercel!
 const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
     console.error("ERRO CRÍTICO: A variável DATABASE_URL não está definida no ambiente.");
+} else {
+    console.log("Variável DATABASE_URL encontrada, tentando conectar...");
 }
 
 const sequelize = new Sequelize(databaseUrl, {
   dialect: 'mysql',
   logging: false,
-  dialectModule: require('mysql2'), // Recomendado para Vercel
+  dialectModule: require('mysql2'), 
   dialectOptions: {
     ssl: {
-      rejectUnauthorized: false // <--- ISSO AQUI resolve o problema de conexão segura com a Railway!
+      require: true,
+      rejectUnauthorized: false // Obrigatório pro Clever Cloud
     }
   }
 });
 
+sequelize.authenticate()
+    .then(() => console.log("Conectado ao banco de dados com sucesso"))
+    .catch(erro => console.log("Erro ao se conectar com o banco de dados: " + erro));
 
 // ==============================================================
 // CRIANDO TABELA USUÁRIOS
 // ==============================================================
 const Ecomerce = sequelize.define("ecomerce", {
+    id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     nome: {
         type: Sequelize.STRING,
         allowNull: false
     },
     email: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true
     },
     senha: {
         type: Sequelize.STRING,
@@ -127,30 +108,34 @@ const Ecomerce = sequelize.define("ecomerce", {
     timestamps: false
 });
 
+// Sincroniza a tabela 1x. Depois pode comentar
+sequelize.sync();
+
 // ============================================================
 // CONFIGURAÇÃO DO PASSPORT - ESTRATÉGIA LOCAL
 // ==============================================================
 passport.use(new LocalStrategy(
 {
     usernameField: 'email',
-    passwordField: 'senha'
+    passwordField: 'senha',
+    passReqToCallback: false
 },
 (email, senha, done)=>{
     Ecomerce.findOne({
         where:{ email: email }
     }).then(usuario=>{
         if(!usuario){
-            return done(null,false,{
-                message:"Usuário não encontrado"
+            return done(null, false, {
+                message: "Usuário não encontrado"
             });
         }
 
-        bcrypt.compare(senha, usuario.senha,(erro,resultado)=>{
+        bcrypt.compare(senha, usuario.senha, (erro, resultado)=>{
             if(resultado){
-                return done(null,usuario);
-            }else{
-                return done(null,false,{
-                    message:"Senha incorreta"
+                return done(null, usuario);
+            } else {
+                return done(null, false, {
+                    message: "Senha incorreta"
                 });
             }
         });
@@ -158,7 +143,7 @@ passport.use(new LocalStrategy(
         return done(erro);
     });
 }));
-       
+        
 // =============================================
 // SERIALIZE E DESERIALIZE USER
 // ==============================================
@@ -175,14 +160,13 @@ passport.deserializeUser((id, done) => {
 });
 
 // ==============================================
-// MIDDLEWARE DE AUTENTICAÇÃO
+// MIDDLEWARE DE AUTENTICAÇÃO SEM FLASH
 // ==============================================
 function verificarAuthenticacao(req, res, next) {
     if (req.isAuthenticated()) {
         return next();
     }
-    req.flash("error_msg", "Você precisa estar logado para acessar esta página.");
-    res.redirect("/login");
+    res.redirect("/login?erro=nao_logado");
 }
 
 // ==============================================
@@ -197,8 +181,7 @@ app.get("/login", (req, res) => {
 // Processar o Login
 app.post("/login", passport.authenticate("local", {
     successRedirect: "/dashboard",
-    failureRedirect: "/login",
-    failureFlash: true
+    failureRedirect: "/login"
 }));
 
 // Tela de Registro de Usuários (Público)
@@ -209,20 +192,17 @@ app.get("/registro", (req, res) => {
 // Processar Registro com Criptografia
 app.post("/registro/novo", (req, res) => {
     if (req.body.senha !== req.body.confirma_senha) {
-        req.flash("error_msg", "As senhas não coincidem.");
-        return res.redirect("/registro");
+        return res.redirect("/registro?erro=senhas");
     }
 
     Ecomerce.findOne({ where: { email: req.body.email } }).then((usuario) => {
         if (usuario) {
-            req.flash("error_msg", "Este e-mail já está cadastrado.");
-            res.redirect("/registro");
+            return res.redirect("/registro?erro=email");
         } else {
             bcrypt.genSalt(10, (erro, salt) => {
                 bcrypt.hash(req.body.senha, salt, (erro, hash) => {
                     if (erro) {
-                        req.flash("error_msg", "Erro no salvamento do usuário.");
-                        res.redirect("/registro");
+                        return res.redirect("/registro?erro=hash");
                     }
 
                     Ecomerce.create({
@@ -231,11 +211,9 @@ app.post("/registro/novo", (req, res) => {
                         senha: hash,
                         confirma_senha: hash
                     }).then(() => {
-                        req.flash("success_msg", "Usuário registrado com sucesso! Faça login.");
-                        res.redirect("/login");
+                        res.redirect("/login?sucesso=registro");
                     }).catch((err) => {
-                        req.flash("error_msg", "Erro ao criar usuário.");
-                       return res.redirect("/registro");
+                        return res.redirect("/registro?erro=criar");
                     });
                 });
             });
@@ -247,19 +225,17 @@ app.post("/registro/novo", (req, res) => {
 app.get("/logout", (req, res, next) => {
     req.logout(function(err) {
         if (err) { return next(err); }
-        req.flash("success_msg", "Deslogado com sucesso.");
-        res.redirect("/login");
+        res.redirect("/login?sucesso=logout");
     });
 });
 
-
-// Adicione isso junto com as suas outras rotas
+// Rota raiz redireciona para login
 app.get("/", (req, res) => {
     res.redirect("/login"); 
 });
 
 // =============================================
-// ROTAS DO CRUD ORIGINAL (PROTEGIDOS)
+// ROTAS DO CRUD (PROTEGIDOS)
 // =============================================
 
 app.get("/ler", verificarAuthenticacao, function(req, res) {
@@ -271,8 +247,7 @@ app.get("/ler", verificarAuthenticacao, function(req, res) {
         });
     })
     .catch(function(erro) {
-        req.flash("error_msg", "Erro ao buscar usuários");
-        res.redirect("/home");
+        res.redirect("/login?erro=buscar");
     });
 });
 
@@ -290,12 +265,10 @@ app.post("/receber", verificarAuthenticacao, function(req, res) {
                 confirma_senha: hash
             })
             .then(function() {
-                req.flash("success_msg", "Usuário cadastrado com sucesso");
-                res.redirect("/login");
+                res.redirect("/ler?sucesso=cadastro");
             })
             .catch(function(erro) {
-                req.flash("error_msg", "Erro ao cadastrar usuário");
-                res.redirect("/cadastro");
+                res.redirect("/cadastro?erro=cadastro");
             });
         });
     });
@@ -306,12 +279,10 @@ app.get("/deletar/:id", verificarAuthenticacao, function(req, res) {
         where: { id: req.params.id }
     })
     .then(function() {
-        req.flash("success_msg", "Usuário deletado com sucesso!");
-        res.redirect("/ler");
+        res.redirect("/ler?sucesso=deletar");
     })
     .catch(function(erro) {
-        req.flash("error_msg", "Erro ao deletar usuário.");
-        res.redirect("/ler");
+        res.redirect("/ler?erro=deletar");
     });
 });
 
@@ -324,8 +295,7 @@ app.get("/editar/:id", verificarAuthenticacao, function(req, res) {
         });
     })
     .catch(function(erro) {
-        req.flash("error_msg", "Usuário não encontrado");
-        res.redirect("/ler");
+        res.redirect("/ler?erro=nao_encontrado");
     });
 });
 
@@ -333,8 +303,6 @@ app.post("/atualizar", verificarAuthenticacao, function(req, res) {
     Ecomerce.update(
         {
             nome: req.body.nome,
-            sobrenome: req.body.sobrenome,
-            idade: req.body.idade,
             email: req.body.email
         },
         {
@@ -342,15 +310,14 @@ app.post("/atualizar", verificarAuthenticacao, function(req, res) {
         }
     )
     .then(function() {
-        req.flash("success_msg", "Usuário atualizado com sucesso!");
-        res.redirect("/ler");
+        res.redirect("/ler?sucesso=atualizar");
     })
     .catch(function(erro) {
-        req.flash("error_msg", "Erro ao atualizar usuário");
-        res.redirect("/ler");
+        res.redirect("/ler?erro=atualizar");
     });
 });
 
+// API de usuários
 app.get("/api/usuarios", function(req, res) {
     Ecomerce.findAll({ order: [['id', 'DESC']] })
     .then(function(usuarios) {
@@ -362,7 +329,7 @@ app.get("/api/usuarios", function(req, res) {
 });
 
 // ==============================================================
-// TRABALHANDO COM PRODUTOS 
+// TRABALHANDO COM PRODUTOS (ROTAS PÚBLICAS)
 // =============================================================
 app.get("/produtos", (req, res) => {
     res.render("produtos");
@@ -378,7 +345,7 @@ app.get("/produto/:id", (req, res) => {
 });
 
 // ==========================
-// ROTA DASHBOARD
+// ROTA DASHBOARD (PROTEGIDO)
 // =========================
 app.get("/dashboard", verificarAuthenticacao, function(req, res){
     res.render("dashboard", {
@@ -387,15 +354,14 @@ app.get("/dashboard", verificarAuthenticacao, function(req, res){
 });
 
 // =============================================================
-// INICIALIZA O SERVIDOR
+// INICIALIZA O SERVIDOR - SÓ LOCAL
 // =============================================================
 const porta = process.env.PORT || 3000;
 
-// Garante que o servidor rode localmente, mas permite que a Vercel controle a exportação
-if (process.env.NODE_ENV !== 'production') {
-    app.listen(porta, () => {
-        console.log("Servidor rodando localmente na porta ${porta}");
-    });
+if (process.env.NODE_ENV !== "production") {
+  app.listen(porta, () => {
+    console.log("Servidor rodando na porta ${porta}");
+  });
 }
 
 module.exports = app;

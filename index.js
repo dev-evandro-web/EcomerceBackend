@@ -19,7 +19,7 @@ const handlebars = require("express-handlebars");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
-const session = require("express-session");
+//const session = require("express-session");
 const flash = require("connect-flash");
 
 // ========================================================
@@ -72,7 +72,7 @@ app.use(session({
 // INICIALIZAÇÃO DO PASSPORT
 // =======================================================
 app.use(passport.initialize());
-app.use(passport.session());
+//app.use(passport.session());
 
 // ==============================================================
 // MIDDLEWARE PERSONALIZADO
@@ -414,8 +414,5 @@ app.get("/dashboard", verificarAuthenticacao, function(req, res){
 // =============================================================
 // INICIALIZA O SERVIDOR
 // =============================================================
-const porta = process.env.PORT || 3000;
-
-app.listen(porta, '0.0.0.0' ,function() {
-    module.exports = app;
-});
+const porta = process.env.PORT || 3000
+module.exports = app;

@@ -413,6 +413,6 @@ app.get("/dashboard", verificarAuthenticacao, function(req, res){
 // =============================================================
 const porta = process.env.PORT || 3000;
 
-app.listen(porta, function() {
+app.listen(porta, '0.0.0.0' ,function() {
     console.log("Servidor iniciado na porta " + porta);
 });

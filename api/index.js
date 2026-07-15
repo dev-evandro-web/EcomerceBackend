@@ -1,23 +1,21 @@
 // ======================================================
 // IMPORTANDO FRAMEWORK EXPRESS E MÓDULOS NATIVOS
-// ======================================================
-const express = require('express');
-const exphbs = require('express-handlebars');
-const path = require('path'); 
+// IMPORTANDO FRAMEWORK EXPRESS E MÓDULOS NATIVOS
+import express from 'express';
+import exphbs from 'express-handlebars';
+import path from 'path';
 const app = express();
 
-// ======================================================
 // IMPORTAR MÓDULOS DE TERCEIROS
-// =======================================================
-const Sequelize = require("sequelize");
+import { Sequelize } from 'sequelize';
+import mysql2 from 'mysql2';
 
-// ========================================================
 // IMPORTAÇÃO PARA AUTENTICAÇÃO E SESSÃO
-//=========================================================
-const session = require("express-session"); 
-const passport = require("passport");
-const LocalStrategy = require("passport-local").Strategy;
-const bcrypt = require("bcryptjs");
+import session from 'express-session';
+import passport from 'passport';
+import { Strategy as LocalStrategy } from 'passport-local';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // ========================================================
 // CONFIGURAÇÃO DE HANDLEBARS E ARQUIVOS ESTÁTICOS
@@ -70,7 +68,9 @@ app.use(function(req, res, next) {
 // ===========================================================
 
 import { Sequelize } from 'sequelize';
+import mysql2 from 'mysql2';
 
+// CONEXÃO COM O BANCO DE DADOS (MySQL)
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
@@ -79,7 +79,7 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: 'mysql',
-    dialectModule: require('mysql2'),
+    dialectModule: mysql2,
     dialectOptions: { ssl: { rejectUnauthorized: false } },
     logging: false
   }
@@ -88,6 +88,7 @@ const sequelize = new Sequelize(
 sequelize.authenticate()
   .then(() => console.log('Banco conectado com sucesso'))
   .catch(err => console.error('Erro ao conectar:', err));
+  
 
 
 

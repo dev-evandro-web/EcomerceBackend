@@ -345,15 +345,18 @@ app.get("/dashboard", verificarAuthenticacao, function(req, res){
 // =============================================================
 // INICIALIZA O SERVIDOR - SÓ LOCAL
 // =============================================================
-const porta = process.env.PORT || 3000;
+// ===========================================
+// INICIALIZA O SERVIDOR - SÓ LOCAL
+// ===========================================
+const porta = Number(process.env.PORT) || 3000;
 
 if (process.env.NODE_ENV !== "production") {
-    app.listen(NUMBER(PORT), () => {
+    app.listen(porta, () => {
         console.log('Servidor rodando na porta ${porta}');
     });
 }
 
-// ========================================
+// ===========================================
 // EXPORT PRA RAILWAY
-// ========================================
+// ===========================================
 module.exports = app;

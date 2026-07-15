@@ -2,7 +2,7 @@
   "name": "ecomerce_backend",
   "version": "1.0.0",
   "description": "Backend Ecommerce",
-  "main": "index.js",
+  "main": "api/.js",
   "scripts": {
     "start": "node api/index.js",
     "dev": "nodemon api/index.js" 
@@ -24,6 +24,6 @@
     "sequelize": "^6.37.8"
   },
   "engines": {
-    "node": "24.x"
+    "node": "20.x"
   }
 }

@@ -67,8 +67,7 @@ app.use(function(req, res, next) {
 // CONEXÃO COM O BANCO DE DADOS (MySQL)
 // ===========================================================
 
-import { Sequelize } from 'sequelize';
-import mysql2 from 'mysql2';
+
 
 // CONEXÃO COM O BANCO DE DADOS (MySQL)
 const sequelize = new Sequelize(

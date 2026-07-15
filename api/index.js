@@ -21,7 +21,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
-const _dirname = dirname(_filename);
+const __dirname = dirname(_filename);
 
 // ========================================================
 // CONFIGURAÇÃO DE HANDLEBARS E ARQUIVOS ESTÁTICOS

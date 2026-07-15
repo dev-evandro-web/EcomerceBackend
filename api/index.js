@@ -68,6 +68,7 @@ app.use(function(req, res, next) {
 // ============================================================
 // CONEXÃO COM O BANCO DE DADOS (MySQL)
 // ===========================================================
+const databaseUrl = process.env.DATABASE_URL
 const sequelize = new Sequelize(databaseUrl, {
   dialect: 'mysql',
   logging: false,

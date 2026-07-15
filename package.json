@@ -2,7 +2,7 @@
   "name": "ecomerce_backend",
   "version": "1.0.0",
   "description": "Backend Ecommerce",
-  "main": "api/.js",
+  "main": "api/index.js",
   "scripts": {
     "start": "node api/index.js",
     "dev": "nodemon api/index.js" 

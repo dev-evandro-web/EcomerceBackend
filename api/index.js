@@ -68,24 +68,26 @@ app.use(function(req, res, next) {
 // ============================================================
 // CONEXÃO COM O BANCO DE DADOS (MySQL)
 // ===========================================================
-const databaseUrl = process.env.DATABASE_URL
-console.log("URL CARREGADA: ", databaseUrl ? "SIM" : "NAO")
-const sequelize = new Sequelize(databaseUrl, {
-  dialect: 'mysql',
-  logging: false,
-  dialectModule: require('mysql2'), 
-  dialectOptions: {
-    ssl: {
-      rejectUnauthorized: false
-    }
-  },
-  pool: {
-    max: 5,      
-    min: 0,
-    acquire: 30000,
-    idle: 10000
+
+import { Sequelize } from 'sequelize';
+
+const sequelize = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASS,
+  {
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    dialect: 'mysql',
+    dialectModule: require('mysql2'),
+    dialectOptions: { ssl: { rejectUnauthorized: false } },
+    logging: false
   }
-});
+);
+
+sequelize.authenticate()
+  .then(() => console.log('Banco conectado com sucesso'))
+  .catch(err => console.error('Erro ao conectar:', err));
 
 
 

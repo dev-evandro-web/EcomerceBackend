@@ -68,28 +68,24 @@ app.use(function(req, res, next) {
 // ============================================================
 // CONEXÃO COM O BANCO DE DADOS (MySQL)
 // ===========================================================
-const databaseUrl = process.env.DATABASE_URL;
-
-if (!databaseUrl) {
-    console.error("ERRO CRÍTICO: DATABASE_URL não foi definida nas Variáveis de Ambiente!");
-}
-
 const sequelize = new Sequelize(databaseUrl, {
   dialect: 'mysql',
   logging: false,
   dialectModule: require('mysql2'), 
+  dialectOptions: {
+    ssl: {
+      rejectUnauthorized: false
+    }
+  },
   pool: {
     max: 5,      
     min: 0,
     acquire: 30000,
     idle: 10000
-  },
-  dialectOptions: {}
+  }
 });
 
-sequelize.authenticate()
-    .then(() => console.log("Conectado ao banco de dados com sucesso!"))
-    .catch(erro => console.error("Erro ao conectar no banco MySQL: " + erro));
+
 
 // ==============================================================
 // MODEL DE USUÁRIOS

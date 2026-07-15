@@ -17,6 +17,12 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import dotenv from 'dotenv';
 dotenv.config();
 
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const _dirname = dirname(_filename);
+
 // ========================================================
 // CONFIGURAÇÃO DE HANDLEBARS E ARQUIVOS ESTÁTICOS
 // =========================================================

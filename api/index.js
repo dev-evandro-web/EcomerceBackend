@@ -1,16 +1,17 @@
 // ======================================================
 // IMPORTANDO FRAMEWORK EXPRESS E MÓDULOS NATIVOS
 // ======================================================
-require("dotenv").config();
-const express = require("express");
+const express = require('express');
+const exphbs = require('express-handlebars');
+const path = require('path'); // <- TEM QUE TER ESSA LINHA
 const app = express();
-const path = require("path");
+
 
 // ======================================================
 // IMPORTAR MÓDULOS DE TERCEIROS
 // =======================================================
 const Sequelize = require("sequelize");
-const handlebars = require("express-handlebars");
+
 
 // ========================================================
 // IMPORTAÇÃO PARA AUTENTICAÇÃO E SESSÃO
@@ -23,15 +24,16 @@ const bcrypt = require("bcryptjs");
 // ========================================================
 // CONFIGURAÇÃO DE HANDLEBARS E ARQUIVOS ESTÁTICOS
 // =========================================================
-const { engine } = require('express-handlebars');
-const path = require('path');
-
-app.engine('handlebars', engine({
-  defaultLayout: 'main',
-  layoutsDir: path.join(__dirname, '../views/layouts')
+app.engine('handlebars', exphbs.engine({
+    defaultLayout: 'main',
+    layoutsDir: path.join(__dirname, '../views/layouts'),
+    partialsDir: path.join(__dirname, '../views/partials')
 }));
 app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirname, '../views/layouts'));
+app.set('views', path.join(__dirname, '../views')); // <- ESSA LINHA É A CHAVE
+
+// Servir CSS, JS, Imagens
+app.use(express.static(path.join(__dirname, '../public')));
 
 
 // ====================================================================
@@ -348,13 +350,20 @@ app.get("/dashboard", verificarAuthenticacao, function(req, res){
 // =============================================================
 // INICIALIZA O SERVIDOR - SÓ LOCAL
 // =============================================================
+const path = require('path');
+
+// ========================================
+// INICIALIZA O SERVIDOR - SÓ LOCAL
+// ========================================
 const porta = process.env.PORT || 3000;
 
 if (process.env.NODE_ENV !== "production") {
-  app.listen(porta, () => {
-    console.log('Servidor rodando na porta ${porta}');
-  });
+    app.listen(porta, () => {
+        console.log('Servidor rodando na porta ${porta}');
+    });
 }
 
+// ========================================
+// EXPORT PRA VERCEL - NÃO TIRA ISSO
+// ========================================
 module.exports = app;
-module.exports.default = app;

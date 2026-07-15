@@ -3,20 +3,18 @@
 // ======================================================
 const express = require('express');
 const exphbs = require('express-handlebars');
-const path = require('path'); // <- TEM QUE TER ESSA LINHA
+const path = require('path'); 
 const app = express();
-
 
 // ======================================================
 // IMPORTAR MÓDULOS DE TERCEIROS
 // =======================================================
 const Sequelize = require("sequelize");
 
-
 // ========================================================
 // IMPORTAÇÃO PARA AUTENTICAÇÃO E SESSÃO
 //=========================================================
-const session = require("express-session"); // OBRIGATÓRIO instalar: npm i express-session
+const session = require("express-session"); 
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
@@ -26,15 +24,14 @@ const bcrypt = require("bcryptjs");
 // =========================================================
 app.engine('handlebars', exphbs.engine({
     defaultLayout: 'main',
-    layoutsDir: path.join(__dirname, '../views/layouts'),
-    partialsDir: path.join(__dirname, '../views/partials')
+    layoutsDir: path.join(__dirname, 'views/layouts'),
+    partialsDir: path.join(__dirname, 'views/partials')
 }));
 app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirname, '../views')); // <- ESSA LINHA É A CHAVE
+app.set('views', path.join(__dirname, 'views'));
 
 // Servir CSS, JS, Imagens
-app.use(express.static(path.join(__dirname, '../public')));
-
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ====================================================================
 // CONFIGURAÇÃO DE BODY PARSER
@@ -43,15 +40,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // =======================================================
-// CONFIGURAÇÃO DE SESSÃO (ESSENCIAL PARA O PASSPORT NO VERCEL)
+// CONFIGURAÇÃO DE SESSÃO
 // =======================================================
 app.use(session({
     secret: process.env.SESSION_SECRET || "chave-secreta-ecommerce",
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: process.env.NODE_ENV === "production", // True apenas se usar HTTPS (Vercel usa por padrão)
-        maxAge: 24 * 60 * 60 * 1000, // Mantém logado por 1 dia
+        secure: process.env.NODE_ENV === "production", 
+        maxAge: 24 * 60 * 60 * 1000, 
         sameSite: 'lax'
     }
 }));
@@ -69,7 +66,7 @@ app.use(function(req, res, next) {
 });
 
 // ============================================================
-// CONEXÃO COM O BANCO DE DADOS (MySQL - Otimizado para Serverless)
+// CONEXÃO COM O BANCO DE DADOS (MySQL)
 // ===========================================================
 const databaseUrl = process.env.DATABASE_URL;
 
@@ -80,9 +77,9 @@ if (!databaseUrl) {
 const sequelize = new Sequelize(databaseUrl, {
   dialect: 'mysql',
   logging: false,
-  dialectModule: require('mysql2'), // OBRIGATÓRIO para funcionar no Vercel
+  dialectModule: require('mysql2'), 
   pool: {
-    max: 5,      // Limita conexões para não estourar o Clever Cloud
+    max: 5,      
     min: 0,
     acquire: 30000,
     idle: 10000
@@ -125,7 +122,7 @@ const Ecomerce = sequelize.define("ecomerce", {
     timestamps: false
 });
 
-// Sincroniza sem travar o carregamento do Serverless
+// Sincroniza
 sequelize.sync()
     .then(() => console.log("Tabelas sincronizadas"))
     .catch(err => console.error("Erro na sincronização de tabelas: ", err));
@@ -161,7 +158,6 @@ passport.serializeUser((usuario, done) => {
 
 passport.deserializeUser((id, done) => {
     Ecomerce.findByPk(id).then((usuario) => {
-        // Converte para objeto plano para o Handlebars conseguir ler sem erros de segurança
         done(null, usuario ? usuario.get({ plain: true }) : null);
     }).catch((err) => {
         done(err, null);
@@ -191,7 +187,7 @@ app.post("/login", passport.authenticate("local", {
 }));
 
 app.get("/Registro", (req, res) => {
-    res.render("layouts/Registro");
+    res.render("Registro");
 });
 
 app.post("/Registro/novo", (req, res) => {
@@ -244,7 +240,6 @@ app.get("/", (req, res) => {
 app.get("/ler", verificarAuthenticacao, function(req, res) {
     Ecomerce.findAll({ order: [['id', 'DESC']] })
     .then(function(usuarios) {
-        // Mapeia para objetos puros para evitar erros do Handlebars em produção
         const usuariosPuros = usuarios.map(u => u.get({ plain: true }));
         res.render("listagem", { usuarios: usuariosPuros, user_logado: req.user });
     })
@@ -350,11 +345,6 @@ app.get("/dashboard", verificarAuthenticacao, function(req, res){
 // =============================================================
 // INICIALIZA O SERVIDOR - SÓ LOCAL
 // =============================================================
-const path = require('path');
-
-// ========================================
-// INICIALIZA O SERVIDOR - SÓ LOCAL
-// ========================================
 const porta = process.env.PORT || 3000;
 
 if (process.env.NODE_ENV !== "production") {
@@ -364,6 +354,6 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 // ========================================
-// EXPORT PRA VERCEL - NÃO TIRA ISSO
+// EXPORT PRA RAILWAY
 // ========================================
 module.exports = app;

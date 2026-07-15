@@ -364,4 +364,4 @@ app.listen(porta, () => {
 // ===========================================
 // EXPORT PRA RAILWAY
 // ===========================================
-module.exports = app;
+export default app;

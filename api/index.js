@@ -346,15 +346,14 @@ app.get("/dashboard", verificarAuthenticacao, function(req, res){
 // INICIALIZA O SERVIDOR - SÓ LOCAL
 // =============================================================
 // ===========================================
-// INICIALIZA O SERVIDOR - SÓ LOCAL
-// ===========================================
+// =============================================================
+// INICIALIZA O SERVIDOR - PRA LOCAL E PRA RAILWAY
+// =============================================================
 const porta = Number(process.env.PORT) || 3000;
 
-if (process.env.NODE_ENV !== "production") {
-    app.listen(porta, () => {
-        console.log('Servidor rodando na porta ${porta}');
-    });
-}
+app.listen(porta, () => {
+    console.log(`Servidor rodando na porta ${porta}`);
+});
 
 // ===========================================
 // EXPORT PRA RAILWAY
